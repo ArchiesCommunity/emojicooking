@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archie's Community - Emoji Cooking Game</title>
+    <title>Archie's Community - Emoji Cooking</title>
     <style>
         :root {
             --primary-color: #AABFFF;
@@ -51,11 +51,9 @@
             height: 50px;
             border-radius: 50%;
             margin-right: 10px;
-            background-color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
+            background-image: url('https://tr.rbxcdn.com/180DAY-3289cd85173a33b1b8ec9d54b6327701/150/150/Image/Webp/noFilter');
+            background-size: cover;
+            background-position: center;
         }
 
         .brand-name {
@@ -242,15 +240,26 @@
             width: 0%;
             transition: width 0.3s;
         }
+        
+        .lives {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .life {
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="logo-container">
-            <div class="logo">🍳</div>
+            <div class="logo"></div>
             <div class="brand-name">Archie's Community</div>
         </div>
-        <div class="game-title">Emoji Cooking Game</div>
+        <div class="game-title">Emoji Cooking</div>
     </div>
 
     <div class="game-container">
@@ -271,6 +280,7 @@
             <div class="progress-bar">
                 <div class="progress" id="progress-bar"></div>
             </div>
+            <div class="lives" id="lives-container"></div>
         </div>
 
         <div class="ingredients-container" id="ingredients-container"></div>
@@ -288,7 +298,7 @@
             <li>Pilih tingkat kesulitan (mudah, sedang, sulit)</li>
             <li>Ikuti resep yang ditampilkan dengan mengklik bahan yang benar</li>
             <li>Setiap resep yang berhasil diselesaikan memberi poin</li>
-            <li>Jika salah memilih bahan, permainan akan berakhir</li>
+            <li>Jika salah memilih bahan, Anda kehilangan satu nyawa</li>
             <li>Coba dapatkan skor tertinggi!</li>
         </ul>
     </div>
@@ -303,8 +313,8 @@
             let currentRecipe = null;
             let currentStep = 0;
             let difficulty = 'medium'; // easy, medium, hard
-            let maxWrongChoices = 3;
-            let wrongChoicesCount = 0;
+            let maxLives = 3;
+            let lives = 3;
 
             // Recipes database
             const recipes = {
@@ -331,6 +341,7 @@
             const recipeStepsElement = document.getElementById('recipe-steps');
             const ingredientsContainer = document.getElementById('ingredients-container');
             const progressBar = document.getElementById('progress-bar');
+            const livesContainer = document.getElementById('lives-container');
             const resetButton = document.getElementById('reset-btn');
             const easyButton = document.getElementById('easy-btn');
             const mediumButton = document.getElementById('medium-btn');
@@ -355,13 +366,13 @@
                 
                 if (level === 'easy') {
                     easyButton.classList.add('active');
-                    maxWrongChoices = 5;
+                    maxLives = 5;
                 } else if (level === 'medium') {
                     mediumButton.classList.add('active');
-                    maxWrongChoices = 3;
+                    maxLives = 3;
                 } else if (level === 'hard') {
                     hardButton.classList.add('active');
-                    maxWrongChoices = 1;
+                    maxLives = 1;
                 }
                 
                 initGame();
@@ -373,7 +384,7 @@
                 timer = 0;
                 gameOver = false;
                 currentStep = 0;
-                wrongChoicesCount = 0;
+                lives = maxLives;
                 clearInterval(timerInterval);
                 timerElement.textContent = timer;
                 scoreElement.textContent = score;
@@ -383,6 +394,9 @@
 
                 // Clear ingredients container
                 ingredientsContainer.innerHTML = '';
+                
+                // Update lives display
+                updateLivesDisplay();
 
                 // Start timer
                 timerInterval = setInterval(() => {
@@ -392,6 +406,16 @@
 
                 // Start with a random recipe
                 startNewRecipe();
+            }
+
+            function updateLivesDisplay() {
+                livesContainer.innerHTML = '';
+                for (let i = 0; i < maxLives; i++) {
+                    const life = document.createElement('div');
+                    life.className = 'life';
+                    life.textContent = i < lives ? '❤️' : '🖤';
+                    livesContainer.appendChild(life);
+                }
             }
 
             function startNewRecipe() {
@@ -474,16 +498,17 @@
                         } else {
                             // Wrong choice
                             ingredientElement.classList.add('wrong');
-                            wrongChoicesCount++;
+                            lives--;
+                            updateLivesDisplay();
                             
-                            if (wrongChoicesCount >= maxWrongChoices) {
+                            if (lives <= 0) {
                                 // Game over
                                 gameOver = true;
                                 clearInterval(timerInterval);
                                 gameStatusElement.textContent = `Game Over! Skor akhir: ${score}`;
                                 gameStatusElement.classList.add('lose');
                             } else {
-                                gameStatusElement.textContent = `Salah! Kesempatan tersisa: ${maxWrongChoices - wrongChoicesCount}`;
+                                gameStatusElement.textContent = `Salah! Nyawa tersisa: ${lives}`;
                                 gameStatusElement.classList.add('lose');
                                 
                                 // Display new ingredient choices after a delay
